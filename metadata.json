@@ -1,0 +1,7 @@
+{
+  "name": "Beauty AI",
+  "description": "An AI-powered dashboard that aggregates and analyzes customer reviews from across the web for any salon, providing key insights, competitor analysis, and marketing tools.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}

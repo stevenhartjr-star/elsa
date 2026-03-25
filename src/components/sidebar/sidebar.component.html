@@ -1,0 +1,39 @@
+<aside class="w-20 lg:w-64 bg-zinc-950 border-r border-white/5 flex flex-col flex-shrink-0 transition-all duration-300 z-20 shadow-sm">
+    <!-- Logo -->
+    <div class="h-20 flex items-center justify-center lg:justify-start lg:px-6 flex-shrink-0">
+         <div class="flex items-center gap-3">
+            <div class="w-8 h-8 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg flex items-center justify-center shadow-lg shadow-purple-500/20">
+                <span class="text-white font-display font-bold text-lg">B</span>
+            </div>
+            <span class="text-xl font-display font-bold text-white tracking-tight hidden lg:block">Beauty AI</span>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="flex-1 px-3 py-6 space-y-2">
+        @for(item of navItems; track item.id) {
+            <button (click)="selectModule(item.id)" 
+                    class="w-full flex items-center gap-4 p-3 rounded-xl transition-all duration-200 group relative overflow-hidden"
+                    [class]="activeModule() === item.id ? 'text-white shadow-md shadow-purple-500/20' : 'text-zinc-400 hover:bg-white/5 hover:text-white'">
+                
+                @if(activeModule() === item.id) {
+                    <div class="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600"></div>
+                }
+
+                <div [innerHTML]="item.icon" class="flex-shrink-0 relative z-10 transition-transform group-hover:scale-110"></div>
+                <span class="font-medium text-sm relative z-10 tracking-wide hidden lg:block">{{ item.name }}</span>
+            </button>
+        }
+    </nav>
+
+    <!-- Footer/User -->
+    <div class="p-6 border-t border-white/5">
+        <div class="flex items-center gap-3 cursor-pointer group">
+            <div class="w-10 h-10 bg-gradient-to-tr from-purple-500 to-pink-500 rounded-full border-2 border-zinc-900 shadow-md group-hover:scale-105 transition-transform"></div>
+            <div class="hidden lg:block">
+                <p class="text-sm font-bold text-white">Julia</p>
+                <p class="text-xs text-zinc-400 font-medium">Strategist</p>
+            </div>
+        </div>
+    </div>
+</aside>

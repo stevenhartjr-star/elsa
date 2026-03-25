@@ -1,0 +1,111 @@
+@if (analysis(); as data) {
+  <div class="space-y-6">
+    <!-- Summary -->
+    <div class="bg-zinc-900/50 p-8 rounded-3xl border border-white/5 shadow-sm">
+      <h3 class="text-xl font-bold text-white mb-4">AI Strategic Summary</h3>
+      <p class="text-zinc-400 leading-relaxed italic border-l-4 border-white/10 pl-4">"{{ data.summary }}"</p>
+    </div>
+    
+    <!-- Detailed Insights -->
+    @if(data.detailedInsights && data.detailedInsights.length > 0) {
+      <div class="bg-zinc-900/50 p-8 rounded-3xl border border-white/5 shadow-sm">
+        <h3 class="flex items-center gap-3 text-xl font-bold text-white mb-6">
+          <div class="p-2 bg-purple-500/10 rounded-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+          </div>
+          Detailed Insights
+        </h3>
+        <ul class="space-y-3">
+          @for (insight of data.detailedInsights; track insight) {
+            <li class="flex items-start gap-3 p-4 bg-zinc-800/50 rounded-xl border border-white/5">
+              <span class="text-purple-400 font-bold mt-1">▸</span>
+              <span class="text-zinc-300 font-medium">{{ insight }}</span>
+            </li>
+          }
+        </ul>
+      </div>
+    }
+
+    <!-- Marketing Campaigns -->
+    @if(data.marketingCampaigns && data.marketingCampaigns.length > 0) {
+      <div class="bg-zinc-900/50 p-8 rounded-3xl border border-white/5 shadow-sm">
+        <h3 class="flex items-center gap-3 text-xl font-bold text-white mb-6">
+          <div class="p-2 bg-rose-500/10 rounded-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-rose-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-2.236 9.168-5.584C18.354 1.832 18 3.65 18 4.5v.552c0 3.3-1.675 6.223-4.131 8.01M5.436 13.683L5 15a1 1 0 001 1h5.436" />
+            </svg>
+          </div>
+          Marketing Campaign Blueprints
+        </h3>
+        <div class="space-y-4">
+          @for (campaign of data.marketingCampaigns; track campaign.title) {
+            <div class="p-6 bg-zinc-800/50 rounded-2xl border border-white/5">
+              <h4 class="font-bold text-lg text-white">{{ campaign.title }}</h4>
+              <p class="text-zinc-400 mt-2 mb-4 leading-relaxed">{{ campaign.description }}</p>
+              <div class="flex flex-wrap gap-x-6 gap-y-2 text-xs border-t border-white/10 pt-4">
+                  <div>
+                    <span class="font-bold text-zinc-500 uppercase tracking-wider">Target Audience</span>
+                    <p class="text-zinc-300 font-medium mt-1">{{ campaign.targetAudience }}</p>
+                  </div>
+                  <div>
+                    <span class="font-bold text-zinc-500 uppercase tracking-wider">Channels</span>
+                    <p class="text-zinc-300 font-medium mt-1">{{ campaign.channels.join(', ') }}</p>
+                  </div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- SWOT Grid -->
+    <div class="grid grid-cols-1 gap-6">
+      <!-- Strengths -->
+      <div class="bg-zinc-900/50 p-6 rounded-3xl border border-white/5 shadow-sm">
+        <h3 class="flex items-center gap-3 text-xl font-bold text-emerald-400 mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.085a2 2 0 00-1.736.93L5.5 8m7 2v5m0 0v5m0-5h-2.18a2 2 0 01-1.99-1.839l-.63-4.46a2 2 0 011.99-2.161H14z" />
+          </svg>
+          Strengths
+        </h3>
+        <ul class="space-y-2 list-disc list-inside text-zinc-400 font-medium">
+          @for (strength of data.strengths; track strength) {
+            <li>{{ strength }}</li>
+          }
+        </ul>
+      </div>
+
+      <!-- Weaknesses -->
+      <div class="bg-zinc-900/50 p-6 rounded-3xl border border-white/5 shadow-sm">
+        <h3 class="flex items-center gap-3 text-xl font-bold text-amber-400 mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.738 3h4.017c.163 0 .326.02.485.06L17 4m-7 10v-5m0 0v-5m0 5h2.18a2 2 0 011.99 1.839l.63 4.46a2 2 0 01-1.99 2.161H10z" />
+          </svg>
+          Weaknesses
+        </h3>
+        <ul class="space-y-2 list-disc list-inside text-zinc-400 font-medium">
+          @for (weakness of data.weaknesses; track weakness) {
+            <li>{{ weakness }}</li>
+          }
+        </ul>
+      </div>
+
+      <!-- Opportunities -->
+      <div class="bg-zinc-900/50 p-6 rounded-3xl border border-white/5 shadow-sm">
+        <h3 class="flex items-center gap-3 text-xl font-bold text-sky-400 mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+          </svg>
+          Opportunities
+        </h3>
+        <ul class="space-y-2 list-disc list-inside text-zinc-400 font-medium">
+          @for (opportunity of data.opportunities; track opportunity) {
+            <li>{{ opportunity }}</li>
+          }
+        </ul>
+      </div>
+    </div>
+  </div>
+}

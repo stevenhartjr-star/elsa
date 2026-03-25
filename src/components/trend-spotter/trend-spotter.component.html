@@ -1,0 +1,132 @@
+<div class="animate-fade-in">
+    @if (isLoading()) {
+        <div class="flex flex-col items-center justify-center text-center p-12 bg-zinc-900/50 rounded-3xl border border-white/5 shadow-sm">
+            <div class="w-16 h-16 border-4 border-rose-900/30 border-t-rose-500 rounded-full animate-spin mb-6"></div>
+            <p class="text-xl font-bold text-white">Scanning market signals...</p>
+            <p class="text-zinc-400 mt-2 font-medium">Compiling strategic report for {{ businessName() }}.</p>
+        </div>
+    }
+    @if (error()) {
+        <div class="bg-red-900/20 border border-red-500/20 text-red-400 px-6 py-4 rounded-2xl text-center shadow-sm" role="alert">
+            <strong class="font-bold block mb-1">Analysis Failed</strong>
+            <span class="text-sm">{{ error() }}</span>
+        </div>
+    }
+    @if (analysis(); as trendData) {
+        <div class="space-y-8">
+            <div class="text-center mb-8">
+                <h2 class="text-4xl font-display font-bold text-white tracking-tight">TrendSpotter Report</h2>
+                <p class="text-lg text-zinc-400 mt-2 font-medium">Strategic Insights for <span class="font-bold text-purple-600">{{ trendData.locationAnalyzed }}</span></p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Local Market Trends -->
+                <div class="bg-zinc-900/50 p-8 rounded-3xl border border-white/5 shadow-sm hover:shadow-md transition-shadow">
+                    <h3 class="flex items-center gap-3 text-xl font-bold text-white mb-6">
+                        <div class="p-2 bg-cyan-900/30 rounded-lg">
+                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-cyan-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                        </div>
+                        Local Market Trends
+                    </h3>
+                    <div class="space-y-4">
+                        @for (item of trendData.localMarketTrends; track item.trend) {
+                            <div class="p-5 bg-zinc-800 rounded-2xl border border-white/5 hover:border-cyan-500/30 transition-colors">
+                                <div class="flex justify-between items-start gap-3 mb-2">
+                                    <h4 class="font-bold text-zinc-200">{{ item.trend }}</h4>
+                                    <span class="text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full"
+                                          [class]="{
+                                            'bg-green-900/30 text-green-400': item.relevance === 'High',
+                                            'bg-yellow-900/30 text-yellow-400': item.relevance === 'Medium',
+                                            'bg-zinc-700 text-zinc-300': item.relevance === 'Low'
+                                          }">
+                                        {{ item.relevance }}
+                                    </span>
+                                </div>
+                                <p class="text-sm text-zinc-400 leading-relaxed">{{ item.description }}</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- General Industry Trends -->
+                <div class="bg-zinc-900/50 p-8 rounded-3xl border border-white/5 shadow-sm hover:shadow-md transition-shadow">
+                    <h3 class="flex items-center gap-3 text-xl font-bold text-white mb-6">
+                        <div class="p-2 bg-teal-900/30 rounded-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-teal-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2h10a2 2 0 002-2v-1a2 2 0 012-2h1.945M7.704 4.343a9.003 9.003 0 0110.592 0m-1.288 11.313a2.5 2.5 0 01-3.536 0M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        </div>
+                        General Industry Trends
+                    </h3>
+                     <div class="space-y-4">
+                        @for (item of trendData.generalIndustryTrends; track item.trend) {
+                            <div class="p-5 bg-zinc-800 rounded-2xl border border-white/5 hover:border-teal-500/30 transition-colors">
+                                <h4 class="font-bold text-zinc-200 mb-2">{{ item.trend }}</h4>
+                                <p class="text-sm text-zinc-400 leading-relaxed">{{ item.description }}</p>
+                            </div>
+                        }
+                     </div>
+                </div>
+            </div>
+
+            <!-- Competitor Snapshot -->
+            <div class="bg-zinc-900/50 p-8 rounded-3xl border border-white/5 shadow-sm">
+                 <h3 class="flex items-center gap-3 text-xl font-bold text-white mb-8">
+                    <div class="p-2 bg-orange-900/30 rounded-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M15 21a6 6 0 00-9-5.197M15 21a6 6 0 006-5.197M12 12a4 4 0 110-8 4 4 0 010 8z" /></svg>
+                    </div>
+                    Competitor Snapshot
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    @for (item of trendData.competitorSnapshot; track item.name) {
+                        <div class="p-6 bg-zinc-800 rounded-2xl border-l-4 border-zinc-600 shadow-sm">
+                           <h4 class="font-display font-bold text-lg text-white mb-4">{{ item.name }}</h4>
+                           <div class="space-y-4">
+                               <div>
+                                   <h5 class="text-xs font-bold text-green-400 uppercase tracking-widest mb-2">Strengths</h5>
+                                   <ul class="space-y-1">
+                                       @for (strength of item.strengths; track strength) {
+                                           <li class="text-sm text-zinc-400 flex items-start gap-2">
+                                               <span class="text-green-500 mt-0.5">•</span> {{ strength }}
+                                           </li>
+                                       }
+                                   </ul>
+                               </div>
+                               <div>
+                                   <h5 class="text-xs font-bold text-blue-400 uppercase tracking-widest mb-2">Opportunities</h5>
+                                   <ul class="space-y-1">
+                                       @for (opp of item.opportunities; track opp) {
+                                           <li class="text-sm text-zinc-400 flex items-start gap-2">
+                                               <span class="text-blue-500 mt-0.5">•</span> {{ opp }}
+                                           </li>
+                                       }
+                                   </ul>
+                               </div>
+                           </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Service Expansion Ideas -->
+            <div class="bg-zinc-900/50 p-8 rounded-3xl border border-white/5 shadow-sm">
+                <h3 class="flex items-center gap-3 text-xl font-bold text-white mb-8">
+                    <div class="p-2 bg-pink-900/30 rounded-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-pink-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
+                    </div>
+                    Service Expansion Ideas
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                     @for (item of trendData.serviceExpansionIdeas; track item.service) {
+                        <div class="p-6 bg-gradient-to-br from-zinc-800 to-zinc-900/50 rounded-2xl border border-white/5 hover:shadow-lg hover:-translate-y-1 transition-all group">
+                           <h4 class="font-bold text-white text-lg group-hover:text-purple-600 transition-colors">{{ item.service }}</h4>
+                           <p class="text-sm text-zinc-400 mt-3 leading-relaxed">{{ item.description }}</p>
+                           <div class="mt-4 pt-4 border-t border-white/5">
+                                <span class="text-xs font-bold text-zinc-500 uppercase tracking-wider">Target Audience</span>
+                                <p class="text-sm font-semibold text-zinc-300 mt-1">{{ item.targetAudience }}</p>
+                           </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>

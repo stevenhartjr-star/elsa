@@ -1,0 +1,329 @@
+<div class="animate-fade-in">
+    <!-- Header -->
+    <div class="text-center mb-8">
+        <h2 class="text-4xl font-display font-bold text-white tracking-tight">Creator Studio</h2>
+        <p class="text-sm text-zinc-400 mt-2 font-medium">High-Fidelity Asset Generation</p>
+    </div>
+
+    <!-- Publishing Modal -->
+    @if (publishState() !== 'idle' && activeImage(); as image) {
+        <div class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in">
+            <div class="bg-zinc-900 border border-white/10 max-w-4xl w-full rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row">
+                <!-- Left: Image Preview -->
+                <div class="md:w-1/2 bg-black/50 p-8 flex items-center justify-center relative">
+                    <img [src]="image.url" [alt]="image.prompt" class="max-w-full max-h-full object-contain shadow-xl rounded-lg">
+                    @if (overlayText()) {
+                        <div class="absolute inset-0 z-20 flex px-8 pointer-events-none"
+                             [class.items-start]="overlayPosition() === 'top'"
+                             [class.pt-12]="overlayPosition() === 'top'"
+                             [class.items-center]="overlayPosition() === 'center'"
+                             [class.items-end]="overlayPosition() === 'bottom'"
+                             [class.pb-12]="overlayPosition() === 'bottom'">
+                            <p class="w-full text-center font-display font-black text-4xl uppercase tracking-wider leading-tight drop-shadow-[0_4px_4px_rgba(0,0,0,0.5)] p-4 bg-black/20 backdrop-blur-sm rounded-lg"
+                               [style.color]="overlayColor()">
+                                {{ overlayText() }}
+                            </p>
+                        </div>
+                    }
+                </div>
+                <!-- Right: Content & Actions -->
+                <div class="md:w-1/2 p-10 flex flex-col bg-zinc-900">
+                    <h3 class="text-3xl font-display font-bold text-white mb-2">Publish</h3>
+                    <p class="text-zinc-400 mb-8 font-medium">Review captions and broadcast.</p>
+
+                    @switch(publishState()) {
+                        @case ('generating') {
+                            <div class="flex-1 flex flex-col items-center justify-center text-center">
+                                <div class="w-12 h-12 border-4 border-purple-500/20 border-t-purple-500 rounded-full animate-spin mb-4"></div>
+                                <p class="font-bold text-white">Synthesizing copy...</p>
+                            </div>
+                        }
+                        @case ('ready') {
+                            <div class="flex-1 space-y-4">
+                                <h4 class="font-bold text-xs uppercase tracking-wider text-zinc-500">Select Copy</h4>
+                                <div class="space-y-3 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                                @for (caption of captions(); track caption) {
+                                    <button (click)="selectedCaption.set(caption)" class="w-full text-left p-4 rounded-xl border-2 transition-all duration-200" [class]="selectedCaption() === caption ? 'bg-purple-500/10 border-purple-500 text-purple-300' : 'bg-zinc-800/50 border-white/5 text-zinc-400 hover:border-purple-500/30'">
+                                        <p class="text-sm font-medium leading-relaxed">{{ caption }}</p>
+                                    </button>
+                                }
+                                </div>
+                            </div>
+                            <div class="mt-8 flex gap-4">
+                                <button (click)="resetPublishState()" class="flex-1 px-6 py-3 border-2 border-zinc-700 text-zinc-300 font-bold rounded-xl hover:bg-zinc-800 transition-colors">Cancel</button>
+                                <button (click)="autoPost()" [disabled]="!selectedCaption()" class="flex-1 px-6 py-3 bg-white text-black font-bold rounded-xl hover:bg-zinc-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-white/10">Auto-Post</button>
+                            </div>
+                        }
+                         @case ('posting') {
+                            <div class="flex-1 flex flex-col items-center justify-center text-center">
+                                <div class="relative w-20 h-20 mb-4">
+                                    <div class="absolute inset-0 border-2 border-purple-500/30 rounded-full animate-ping"></div>
+                                    <div class="absolute inset-0 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+                                </div>
+                                <p class="font-bold text-white tracking-wide uppercase text-sm">Broadcasting...</p>
+                            </div>
+                        }
+                         @case ('posted') {
+                            <div class="flex-1 flex flex-col items-center justify-center text-center text-white">
+                                <div class="w-20 h-20 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mb-4">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                                </div>
+                                <p class="text-2xl font-display font-bold">Live.</p>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Main Grid Layout -->
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+
+        <!-- Center: Preview & Actions -->
+        <div class="lg:col-span-3 space-y-6">
+            <div class="bg-zinc-900/50 p-2 rounded-3xl border border-white/5 shadow-xl shadow-black/50">
+                 <div class="relative w-full bg-black/50 rounded-2xl flex items-center justify-center overflow-hidden"
+                     [style.padding-top]="getAspectRatioPadding()">
+                    <div class="absolute inset-0 opacity-[0.05]" style="background-image: radial-gradient(#fff 1px, transparent 1px); background-size: 20px 20px;"></div>
+                    <div class="absolute inset-0 z-0">
+                        @if (isGenerating()) {
+                             <div class="flex flex-col items-center justify-center h-full z-10 p-6 text-center">
+                                <div class="w-16 h-16 border-4 border-purple-500/20 border-t-purple-500 rounded-full animate-spin mb-6"></div>
+                                <p class="text-2xl font-display font-bold text-white tracking-tight">Rendering</p>
+                                <p class="text-sm text-zinc-400 mt-2 font-medium">High-Fidelity Processing</p>
+                             </div>
+                        } @else if (error()) {
+                             <div class="flex flex-col items-center justify-center h-full z-10 p-6 text-center">
+                                <div class="w-16 h-16 bg-red-500/10 text-red-400 flex items-center justify-center mb-4 rounded-full">
+                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                                <p class="text-red-400 font-medium bg-red-500/10 px-6 py-3 rounded-xl border border-red-500/20">
+                                    {{ error() }}
+                                </p>
+                             </div>
+                        } @else if (activeImage(); as img) {
+                            <img [src]="img.url" alt="Generated marketing image" class="absolute inset-0 w-full h-full object-contain animate-fade-in z-10 rounded-2xl">
+                            @if (overlayText()) {
+                                <div class="absolute inset-0 z-20 flex px-8 pointer-events-none"
+                                     [class.items-start]="overlayPosition() === 'top'"
+                                     [class.pt-12]="overlayPosition() === 'top'"
+                                     [class.items-center]="overlayPosition() === 'center'"
+                                     [class.items-end]="overlayPosition() === 'bottom'"
+                                     [class.pb-12]="overlayPosition() === 'bottom'">
+                                    <p class="w-full text-center font-bold text-4xl leading-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]"
+                                       [style.color]="overlayColor()">
+                                        {{ overlayText() }}
+                                    </p>
+                                </div>
+                            }
+                        } @else {
+                             <div class="text-center text-zinc-600 z-10">
+                                <span class="block text-6xl mb-4 opacity-20">◇</span>
+                                <p class="text-sm font-bold uppercase tracking-widest opacity-60">Workspace Ready</p>
+                             </div>
+                        }
+                    </div>
+                </div>
+            </div>
+            
+            @if (activeImage()) {
+                <div class="flex gap-4 mt-4">
+                    <button (click)="editGeneratedImage(activeImage()!)" class="flex-1 flex items-center justify-center gap-3 bg-zinc-900/50 border-2 border-white/5 text-zinc-300 font-bold rounded-xl py-4 hover:bg-zinc-800 hover:border-white/10 transition-all shadow-sm">
+                        <span>Refine in Editor</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                    </button>
+                    <button (click)="downloadImage()" class="flex-1 flex items-center justify-center gap-3 bg-zinc-900/50 border-2 border-white/5 text-zinc-300 font-bold rounded-xl py-4 hover:bg-zinc-800 hover:border-white/10 transition-all shadow-sm">
+                        <span>Download</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                    </button>
+                    <button (click)="startPublishWorkflow()" class="flex-1 flex items-center justify-center gap-3 bg-white text-black font-bold rounded-xl py-4 hover:bg-zinc-200 transition-all shadow-xl shadow-white/10">
+                        <span>Initiate Campaign</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+                    </button>
+                </div>
+            }
+        </div>
+
+        <!-- Right: Controls Sidebar -->
+        <div class="lg:col-span-2 bg-zinc-900/50 border border-white/5 rounded-3xl p-6 h-fit space-y-8 shadow-sm">
+            
+            <!-- Mode Switcher -->
+            <div class="flex bg-zinc-800/50 p-1 rounded-xl">
+                <button (click)="setMode('text-to-image')" [class]="mode() === 'text-to-image' ? 'bg-zinc-700 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-300'" class="flex-1 py-2.5 text-xs font-bold uppercase tracking-wide rounded-lg transition-all text-center">Create</button>
+                <button (click)="setMode('image-inspired')" [class]="mode() === 'image-inspired' ? 'bg-zinc-700 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-300'" class="flex-1 py-2.5 text-xs font-bold uppercase tracking-wide rounded-lg transition-all text-center">Remix</button>
+                <button (click)="setMode('ai-editor')" [class]="mode() === 'ai-editor' ? 'bg-zinc-700 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-300'" class="flex-1 py-2.5 text-xs font-bold uppercase tracking-wide rounded-lg transition-all text-center">Edit</button>
+            </div>
+
+            <!-- Contextual Controls -->
+            <div class="space-y-8 animate-fade-in">
+                
+                @if (mode() === 'text-to-image') {
+                    <div>
+                         <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-4">1. Campaign Base</h3>
+                        
+                        <!-- Initial Analysis Campaigns -->
+                        <div class="space-y-2 max-h-48 overflow-y-auto custom-scrollbar pr-2 mb-4">
+                            @for (campaign of analysis().strategicAnalysis.marketingCampaigns; track campaign.title) {
+                                <button (click)="useCampaign(campaign)" class="w-full text-left p-3 rounded-xl hover:bg-zinc-800/50 border border-transparent hover:border-white/10 transition-all group">
+                                    <p class="font-bold text-sm text-zinc-300 group-hover:text-purple-400">{{ campaign.title }}</p>
+                                </button>
+                            }
+                        </div>
+
+                         <!-- New Brainstorm Section -->
+                         <div class="pt-4 border-t border-white/5">
+                             <h4 class="text-xs font-bold text-purple-400 uppercase tracking-wider mb-3">Need Inspiration?</h4>
+                             <button (click)="generateNewIdeas()" [disabled]="isBrainstorming()" class="w-full flex items-center justify-center gap-2 py-3 bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 font-bold rounded-xl transition-colors mb-3 disabled:opacity-50">
+                                 @if (isBrainstorming()) {
+                                    <div class="w-4 h-4 border-2 border-purple-500/30 border-t-purple-400 rounded-full animate-spin"></div>
+                                 } @else {
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                                 }
+                                 <span>Brainstorm AI Concepts</span>
+                             </button>
+                             
+                             @if (brainstormedIdeas().length > 0) {
+                                 <div class="space-y-2 animate-fade-in">
+                                     @for (idea of brainstormedIdeas(); track idea.title) {
+                                         <button (click)="useBrainstormedIdea(idea)" class="w-full text-left p-3 rounded-xl bg-zinc-800/50 border border-white/5 hover:border-purple-500/30 hover:shadow-md transition-all group">
+                                             <p class="font-bold text-xs text-white mb-1">{{ idea.title }}</p>
+                                             <p class="text-[10px] text-zinc-400 line-clamp-2">{{ idea.concept }}</p>
+                                         </button>
+                                     }
+                                 </div>
+                             }
+                         </div>
+                    </div>
+                }
+
+                @if (mode() === 'image-inspired' || mode() === 'ai-editor') {
+                    <div>
+                        <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-4">Source Material</h3>
+                        <div class="relative w-full h-32 bg-black/50 border-2 border-dashed border-zinc-700 rounded-2xl flex items-center justify-center text-center p-4 hover:border-purple-500 hover:bg-purple-500/5 transition-all group">
+                            <input type="file" id="image-upload" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept="image/*" (change)="handleImageUpload($event)">
+                            @if (uploadedImage(); as img) {
+                                <img [src]="img" alt="Uploaded preview" class="h-full w-full object-contain opacity-50 rounded-lg">
+                                <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                    <span class="bg-zinc-800 shadow-md text-white px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide">Update Source</span>
+                                </div>
+                            } @else {
+                                <label for="image-upload" class="cursor-pointer text-xs font-bold text-zinc-500 group-hover:text-purple-400 uppercase tracking-widest flex flex-col items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                                    <span>Upload Image</span>
+                                </label>
+                            }
+                        </div>
+                    </div>
+                }
+
+                @if (mode() !== 'ai-editor') {
+                    <div>
+                        <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-4">Engine Preset</h3>
+                        <div class="grid grid-cols-2 gap-3 mb-3">
+                             <button (click)="setStylePreset('nano-pro')" [class]="stylePreset() === 'nano-pro' ? 'bg-white text-black shadow-lg shadow-white/10' : 'bg-zinc-800/50 text-zinc-400 border border-white/5 hover:border-white/10'" class="py-4 px-3 rounded-xl text-xs font-bold uppercase tracking-wide transition-all">Nano-Pro</button>
+                             <button (click)="setStylePreset('john-v3')" [class]="stylePreset() === 'john-v3' ? 'bg-white text-black shadow-lg shadow-white/10' : 'bg-zinc-800/50 text-zinc-400 border border-white/5 hover:border-white/10'" class="py-4 px-3 rounded-xl text-xs font-bold uppercase tracking-wide transition-all">John V3</button>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button (click)="setStylePreset('editorial')" [class]="stylePreset() === 'editorial' ? 'bg-white text-black' : 'bg-zinc-800/50 text-zinc-500 border border-white/5 hover:border-white/10'" class="py-2 px-3 rounded-lg text-[10px] font-bold uppercase tracking-wide transition-all">Editorial</button>
+                            <button (click)="setStylePreset('minimalist')" [class]="stylePreset() === 'minimalist' ? 'bg-white text-black' : 'bg-zinc-800/50 text-zinc-500 border border-white/5 hover:border-white/10'" class="py-2 px-3 rounded-lg text-[10px] font-bold uppercase tracking-wide transition-all">Minimal</button>
+                            <button (click)="setStylePreset('neon')" [class]="stylePreset() === 'neon' ? 'bg-white text-black' : 'bg-zinc-800/50 text-zinc-500 border border-white/5 hover:border-white/10'" class="py-2 px-3 rounded-lg text-[10px] font-bold uppercase tracking-wide transition-all">Neon</button>
+                        </div>
+                    </div>
+                }
+
+                <div>
+                    <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-4">
+                        {{ mode() === 'ai-editor' ? 'Editing Instruction' : 'Art Direction' }}
+                    </h3>
+                    <div class="relative">
+                        @if (mode() === 'ai-editor') {
+                             <textarea [value]="editPrompt()" (input)="updateEditPrompt($event)" rows="4" class="w-full bg-black/50 border border-white/5 rounded-xl p-4 text-white text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/20 resize-none font-medium placeholder-zinc-600 transition-all" placeholder="e.g. Make the hair platinum blonde..."></textarea>
+                        } @else {
+                             <textarea [value]="prompt()" (input)="updatePrompt($event)" rows="4" class="w-full bg-black/50 border border-white/5 rounded-xl p-4 text-white text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/20 resize-none font-medium placeholder-zinc-600 transition-all" placeholder="Describe the scene..."></textarea>
+                             <button (click)="enhancePrompt()" [disabled]="isEnhancingPrompt() || !prompt()" class="absolute bottom-3 right-3 px-3 py-1.5 bg-zinc-800 shadow-sm border border-white/10 rounded-lg text-[10px] uppercase font-bold text-purple-400 hover:bg-zinc-700 transition-colors disabled:opacity-50">
+                                @if(isEnhancingPrompt()) { <span>Enhancing...</span> } @else { <span>+ Enhance</span> }
+                            </button>
+                        }
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-4">Text Overlay</h3>
+                    <div class="space-y-4">
+                        <input type="text" [value]="overlayText()" (input)="updateOverlayText($event)" class="w-full bg-black/50 border border-white/5 rounded-xl p-3 text-white text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/20 font-medium placeholder-zinc-600 transition-all" placeholder="Add promotional text...">
+                        <div class="flex gap-2">
+                            <button (click)="setOverlayPosition('top')" [class]="overlayPosition() === 'top' ? 'bg-zinc-700 text-white' : 'bg-zinc-800/50 text-zinc-500 border border-white/5 hover:border-white/10'" class="flex-1 px-3 py-2 rounded-lg text-xs font-bold transition-all">Top</button>
+                            <button (click)="setOverlayPosition('center')" [class]="overlayPosition() === 'center' ? 'bg-zinc-700 text-white' : 'bg-zinc-800/50 text-zinc-500 border border-white/5 hover:border-white/10'" class="flex-1 px-3 py-2 rounded-lg text-xs font-bold transition-all">Center</button>
+                            <button (click)="setOverlayPosition('bottom')" [class]="overlayPosition() === 'bottom' ? 'bg-zinc-700 text-white' : 'bg-zinc-800/50 text-zinc-500 border border-white/5 hover:border-white/10'" class="flex-1 px-3 py-2 rounded-lg text-xs font-bold transition-all">Bottom</button>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <label class="text-xs font-bold text-zinc-500 uppercase tracking-wide">Color</label>
+                            <div class="flex gap-2">
+                                <button (click)="setOverlayColor('#ffffff')" [class.ring-2]="overlayColor() === '#ffffff'" class="w-6 h-6 rounded-full bg-white border border-zinc-700 ring-offset-2 ring-offset-zinc-900 ring-purple-500 transition-all"></button>
+                                <button (click)="setOverlayColor('#000000')" [class.ring-2]="overlayColor() === '#000000'" class="w-6 h-6 rounded-full bg-black border border-zinc-700 ring-offset-2 ring-offset-zinc-900 ring-purple-500 transition-all"></button>
+                                <button (click)="setOverlayColor('#f59e0b')" [class.ring-2]="overlayColor() === '#f59e0b'" class="w-6 h-6 rounded-full bg-amber-500 border border-zinc-700 ring-offset-2 ring-offset-zinc-900 ring-purple-500 transition-all"></button>
+                                <button (click)="setOverlayColor('#ec4899')" [class.ring-2]="overlayColor() === '#ec4899'" class="w-6 h-6 rounded-full bg-pink-500 border border-zinc-700 ring-offset-2 ring-offset-zinc-900 ring-purple-500 transition-all"></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                 @if (mode() !== 'ai-editor') {
+                    <div>
+                        <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-4">Format</h3>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            @for (ratio of supportedAspectRatios; track ratio) {
+                                <button (click)="setAspectRatio(ratio)" [class]="aspectRatio() === ratio ? 'bg-zinc-700 text-white' : 'bg-zinc-800/50 text-zinc-500 border border-white/5 hover:border-white/10'" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all">{{ ratio }}</button>
+                            }
+                        </div>
+                        <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-4">Resolution</h3>
+                        <div class="flex flex-wrap gap-2">
+                            @for (size of supportedImageSizes; track size) {
+                                <button (click)="setImageSize(size)" [class]="imageSize() === size ? 'bg-zinc-700 text-white' : 'bg-zinc-800/50 text-zinc-500 border border-white/5 hover:border-white/10'" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all">{{ size }}</button>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="pt-6 border-t border-white/5">
+                <button (click)="generate()" [disabled]="isGenerating() || ((mode() === 'image-inspired' || mode() === 'ai-editor') && !uploadedImage())" class="w-full flex items-center justify-center gap-3 px-6 py-5 bg-gradient-pop text-white rounded-2xl shadow-lg shadow-purple-500/20 hover:shadow-xl hover:shadow-purple-500/30 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none font-bold uppercase tracking-wider text-sm transition-all">
+                    @if (isGenerating()) {
+                        <div class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                        <span>Processing...</span>
+                    } @else {
+                        <span>{{ mode() === 'ai-editor' ? 'Execute Edit' : 'Generate Asset' }}</span>
+                    }
+                </button>
+            </div>
+        </div>
+        
+        <!-- Bottom: Session Gallery -->
+         @if (generatedImages().length > 0) {
+            <div class="lg:col-span-5 bg-zinc-900/50 p-6 rounded-3xl border border-white/5 shadow-sm">
+                <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-4">Session Gallery</h3>
+                <div class="flex gap-4 overflow-x-auto pb-2 custom-scrollbar">
+                    @for (image of generatedImages(); track image.id) {
+                        <div class="relative group flex-shrink-0">
+                            <button (click)="selectImageFromGallery(image)" class="relative aspect-square h-24 w-24 rounded-xl overflow-hidden border-2 transition-all"
+                                    [class.border-purple-500]="activeImage()?.id === image.id"
+                                    [class.border-white/10]="activeImage()?.id !== image.id">
+                                <img [src]="image.url" [alt]="image.prompt" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                            </button>
+                            <!-- Hover Action for Edit -->
+                            <div class="absolute inset-0 bg-black/60 rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none backdrop-blur-sm">
+                                <button (click)="editGeneratedImage(image); $event.stopPropagation()" class="pointer-events-auto bg-white text-black px-3 py-1 rounded-full text-[10px] uppercase font-bold shadow-md hover:bg-zinc-200">
+                                    Edit
+                                </button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+    </div>
+</div>

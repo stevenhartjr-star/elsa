@@ -1,0 +1,38 @@
+<div class="bg-zinc-900/50 p-6 rounded-2xl border border-white/5 shadow-sm">
+  <h3 class="text-sm font-bold text-zinc-500 uppercase tracking-widest mb-6">Source Breakdown</h3>
+  @if (sourceData().length > 0) {
+    <!-- Bar Chart -->
+    <div class="w-full bg-zinc-800/50 rounded-full h-8 flex overflow-hidden mb-6 border border-white/5">
+      @for (item of sourceData(); track item.source; let i = $index) {
+        <div [class]="colors[i % colors.length]"
+            class="h-full text-xs font-bold text-white flex items-center justify-center p-1 cursor-pointer hover:opacity-90 transition-opacity"
+            [style.width.%]="item.percentage"
+            [title]="item.source + ': ' + item.count + ' reviews (' + item.percentage.toFixed(1) + '%)'"
+            (click)="onSourceClick(item.source)">
+          @if (item.percentage > 10) {
+            <span class="truncate shadow-sm drop-shadow-md">{{ item.source }}</span>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- List -->
+    <ul class="space-y-3">
+      @for (item of sourceData(); track item.source; let i = $index) {
+        <li class="flex justify-between items-center text-sm p-3 rounded-xl cursor-pointer hover:bg-zinc-800/50 transition-colors group"
+            (click)="onSourceClick(item.source)">
+          <div class="flex items-center gap-3">
+            <div class="w-3 h-3 rounded-full shadow-sm ring-2 ring-zinc-900" [class]="colors[i % colors.length]"></div>
+            <span class="font-bold text-zinc-300 group-hover:text-white transition-colors">{{ item.source }}</span>
+          </div>
+          <div class="text-zinc-500 font-medium">
+            <span class="font-bold text-white">{{ item.count }}</span> reviews 
+            <span class="text-xs bg-zinc-800/50 px-2 py-1 rounded-md ml-1 text-zinc-400 font-bold">{{ item.percentage.toFixed(1) }}%</span>
+          </div>
+        </li>
+      }
+    </ul>
+  } @else {
+    <p class="text-zinc-500 text-sm font-medium text-center py-4">No source data available.</p>
+  }
+</div>

@@ -1,0 +1,183 @@
+<div class="space-y-6">
+  <!-- Filter Controls -->
+  <div class="bg-zinc-900/50 p-6 rounded-3xl border border-white/5 shadow-sm space-y-6">
+    
+    <!-- Search Input -->
+    <div>
+      <label for="review-search" class="sr-only">Search reviews</label>
+      <div class="relative">
+        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+          <svg class="h-5 w-5 text-zinc-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+          </svg>
+        </div>
+        <input type="text"
+               id="review-search"
+               (input)="updateSearchQuery($event)"
+               placeholder="Search review text (e.g., 'service', 'expensive')..."
+               class="block w-full pl-11 pr-4 py-3 border border-white/5 rounded-xl leading-5 bg-zinc-900/50 text-white placeholder-zinc-500 focus:outline-none focus:bg-zinc-800 focus:border-purple-500 focus:ring-4 focus:ring-purple-500/20 transition-all shadow-inner font-medium">
+      </div>
+    </div>
+
+    <div class="flex flex-col md:flex-row gap-6 md:items-center justify-between border-t border-white/5 pt-6">
+      <div class="flex items-center gap-4">
+        <span class="text-xs font-bold text-zinc-500 uppercase tracking-widest flex-shrink-0">Source</span>
+        <div class="flex flex-wrap gap-2">
+          @for (source of sources(); track source) {
+            <button (click)="setSourceFilter(source)"
+                    [class]="activeSourceFilter() === source ? 'bg-zinc-800 text-white shadow-lg shadow-zinc-900/50' : 'bg-zinc-900/50 border border-white/5 text-zinc-400 hover:bg-zinc-800'"
+                    class="px-4 py-2 rounded-lg text-sm font-bold transition-all">
+              {{ source }}
+            </button>
+          }
+        </div>
+      </div>
+       <div class="flex items-center gap-4">
+        <span class="text-xs font-bold text-zinc-500 uppercase tracking-widest flex-shrink-0">Sentiment</span>
+        <div class="flex flex-wrap gap-2">
+          @for (sentiment of ['All', 'Positive', 'Neutral', 'Negative']; track sentiment) {
+            <button (click)="setSentimentFilter(sentiment)"
+                    [class]="activeSentimentFilter() === sentiment ? 'bg-zinc-800 text-white shadow-lg shadow-zinc-900/50' : 'bg-zinc-900/50 border border-white/5 text-zinc-400 hover:bg-zinc-800'"
+                    class="px-4 py-2 rounded-lg text-sm font-bold transition-all">
+              {{ sentiment }}
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+    <div class="border-t border-white/5 pt-4 flex justify-end">
+       <button (click)="exportToCsv()"
+              [disabled]="filteredReviews().length === 0"
+              class="flex items-center gap-2 px-5 py-2.5 bg-zinc-800 border border-white/5 text-zinc-300 font-bold rounded-xl hover:bg-zinc-700 hover:border-white/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-zinc-500" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+          </svg>
+          Export CSV
+      </button>
+    </div>
+  </div>
+
+  <!-- Review List -->
+  <div class="space-y-4">
+    @for (review of paginatedReviews(); track $index) {
+      <div class="bg-zinc-900/50 rounded-2xl border transition-all hover:shadow-xl hover:-translate-y-0.5"
+           [class]="{
+             'border-green-900/30 shadow-green-900/20': review.sentiment === 'Positive',
+             'border-amber-900/30 shadow-amber-900/20': review.sentiment === 'Neutral',
+             'border-red-900/30 shadow-red-900/20': review.sentiment === 'Negative'
+           }">
+        <div class="p-6">
+            <div class="flex justify-between items-start">
+              <div class="flex items-center gap-4">
+                 <div class="w-12 h-12 rounded-full bg-zinc-800 flex items-center justify-center font-bold text-zinc-400 text-lg shadow-inner">
+                    {{ review.authorName ? review.authorName.charAt(0).toUpperCase() : '?' }}
+                 </div>
+                 <div>
+                    @if (review.authorUrl) {
+                      <a [href]="review.authorUrl" target="_blank" rel="noopener" class="font-bold text-white hover:text-purple-600 hover:underline text-lg">{{ review.authorName || 'Anonymous' }}</a>
+                    } @else {
+                      <p class="font-bold text-white text-lg">{{ review.authorName || 'Anonymous' }}</p>
+                    }
+                    @if (review.date) {
+                      <p class="text-xs font-bold text-zinc-500 uppercase tracking-wide mt-1">{{ review.date }}</p>
+                    }
+                 </div>
+              </div>
+              <div class="flex flex-col items-end gap-2">
+                @if (review.rating !== null) {
+                  <div class="flex items-center gap-1.5 text-sm bg-zinc-800 text-white px-3 py-1.5 rounded-lg shadow-md">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                    <span class="font-bold">{{ review.rating.toFixed(1) }}</span>
+                  </div>
+                }
+                @if (review.stylistMentioned) {
+                  <div class="flex items-center gap-1.5 text-xs bg-purple-900/30 text-purple-400 px-3 py-1.5 rounded-lg font-bold border border-purple-500/20" title="Stylist Mentioned">
+                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                       <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                     </svg>
+                     <span>{{ review.stylistMentioned }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+            
+            <p class="text-zinc-400 italic my-6 leading-relaxed text-lg border-l-4 border-zinc-700 pl-4">"{{ review.quote }}"</p>
+
+            @if (review.photos && review.photos.length > 0) {
+              <div class="flex gap-3 overflow-x-auto pb-2 custom-scrollbar">
+                @for (photo of review.photos; track photo) {
+                  <a [href]="photo" target="_blank" rel="noopener">
+                     <img [src]="photo" alt="Review photo" class="h-24 w-24 object-cover rounded-xl shadow-sm hover:opacity-90 transition-opacity border border-white/5"/>
+                  </a>
+                }
+              </div>
+            }
+        </div>
+        <div class="bg-zinc-900/30 px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between text-sm text-zinc-400 rounded-b-2xl gap-3 border-t border-white/5">
+            <div class="flex items-center gap-6">
+               <span class="font-bold text-zinc-500 uppercase tracking-wider text-xs">{{ review.source }}</span>
+               @if (review.likes) {
+                <div class="flex items-center gap-1.5 text-zinc-400" title="Likes">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333V17a1 1 0 001 1h8a1 1 0 001-1v-2.583c0-.528-.192-1.024-.538-1.408l-2.92-2.919A1.5 1.5 0 0010.583 10H6zm.25-3.167a1.5 1.5 0 012.121 0l2.121 2.121a1.5 1.5 0 01-2.12 2.121L6.25 9.286a1.5 1.5 0 010-2.121z" />
+                    </svg>
+                    <span class="font-bold">{{ review.likes }}</span>
+                </div>
+               }
+            </div>
+            
+            @if (review.reviewUrl) {
+             <div class="flex items-center gap-2 overflow-hidden">
+                <a [href]="review.reviewUrl" target="_blank" rel="noopener" class="text-purple-600 hover:text-purple-700 font-bold text-xs uppercase tracking-wide hover:underline flex items-center gap-1.5 truncate" title="Authenticate Review Record">
+                    <span class="truncate">Verify Record</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                </a>
+             </div>
+            } @else {
+                <span class="text-[10px] font-bold text-zinc-600 uppercase tracking-widest">No Link</span>
+            }
+        </div>
+      </div>
+    } @empty {
+      <div class="text-center py-16 bg-zinc-900/50 rounded-3xl border border-white/5 shadow-sm">
+        <p class="text-zinc-500 font-medium">No reviews match the current filters.</p>
+      </div>
+    }
+  </div>
+
+  @if (filteredReviews().length > 0) {
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-white/5 mt-8">
+      <div class="text-sm text-zinc-400 font-medium">
+        Showing <span class="font-bold text-white">{{ startIndex() }}</span> - <span class="font-bold text-white">{{ endIndex() }}</span> of <span class="font-bold text-white">{{ filteredReviews().length }}</span>
+      </div>
+      
+      <div class="flex items-center gap-2">
+        <button (click)="setPage(currentPage() - 1)"
+                [disabled]="currentPage() === 1"
+                class="px-4 py-2 bg-zinc-800 text-zinc-300 border border-white/5 rounded-lg hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm font-bold">
+          Prev
+        </button>
+
+        <div class="flex gap-1">
+          @for (page of pageNumbers(); track page) {
+            <button (click)="setPage(page)"
+                    [class]="page === currentPage() ? 'bg-zinc-700 text-white shadow-md' : 'bg-zinc-900/50 text-zinc-400 border border-white/5 hover:bg-zinc-800'"
+                    class="w-9 h-9 flex items-center justify-center rounded-lg text-sm font-bold transition-all">
+              {{ page }}
+            </button>
+          }
+        </div>
+
+        <button (click)="setPage(currentPage() + 1)"
+                [disabled]="currentPage() === totalPages()"
+                class="px-4 py-2 bg-zinc-800 text-zinc-300 border border-white/5 rounded-lg hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm font-bold">
+          Next
+        </button>
+      </div>
+    </div>
+  }
+</div>
